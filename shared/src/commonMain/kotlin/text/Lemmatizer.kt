@@ -14,21 +14,38 @@ class Lemmatizer(
     private val language: Language,
 ) {
     /**
-     * Returns the candidate lemmas of [word], most likely first, ending with the lowercased word itself. A word no
-     * rule explains comes back alone. French returns only the lowercased word for now.
+     * Returns the candidate lemmas of [word], most likely first, ending with the word itself, lowercased and with
+     * curly apostrophes made straight. A word no rule explains comes back alone. French returns only that form for
+     * now.
      */
     fun lemmasOf(word: String): List<String> {
-        val lowercased = word.lowercase()
+        val normalized = word.lowercase().replace('\u2019', '\'')
         val candidates =
             when (language) {
-                Language.ENGLISH -> englishCandidates(lowercased)
+                Language.ENGLISH -> englishCandidates(normalized)
                 Language.FRENCH -> emptyList()
             }
-        return (candidates + lowercased).distinct()
+        return (candidates + normalized).distinct()
     }
 
-    private fun englishCandidates(word: String): List<String> =
-        ENGLISH_WORD_FORMS[word] ?: suffixCandidates(word).filterNot { it in ENGLISH_FUNCTION_WORDS }
+    private fun englishCandidates(word: String): List<String> {
+        val clitic = CLITICS.firstOrNull { word.length > it.length && word.endsWith(it) }
+        return when {
+            word in ENGLISH_WORD_FORMS -> ENGLISH_WORD_FORMS.getValue(word)
+            clitic != null -> cliticCandidates(word, clitic)
+            else -> suffixCandidates(word).filterNot { it in ENGLISH_FUNCTION_WORDS }
+        }
+    }
+
+    // The tokenizer keeps Holmes's and doesn't whole, so the word inside is looked up: holmes, and does, which is do.
+    // A few negations change the verb itself, as can't and won't do.
+    private fun cliticCandidates(
+        word: String,
+        clitic: String,
+    ): List<String> {
+        val host = word.dropLast(clitic.length)
+        return NEGATED_FORMS[word]?.let { listOf(it) } ?: (englishCandidates(host) + host)
+    }
 
     private fun suffixCandidates(word: String): List<String> =
         when {
@@ -103,6 +120,11 @@ class Lemmatizer(
             stem[stem.lastIndex - 1] in VOWELS &&
             stem.dropLast(2).none { it in VOWELS }
 }
+
+/** Endings that join a word without changing it: possession, negation and contracted verbs. */
+private val CLITICS = listOf("n't", "'s", "'ll", "'re", "'ve", "'m", "'d")
+
+private val NEGATED_FORMS = mapOf("can't" to "can", "won't" to "will", "shan't" to "shall", "ain't" to "be")
 
 private val ES_ENDINGS = listOf("ches", "shes", "sses", "xes", "zzes", "oes")
 

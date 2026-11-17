@@ -4,6 +4,7 @@ import dev.sabti.sidegloss.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class LemmatizerTest {
     private val english = Lemmatizer(Language.ENGLISH)
@@ -109,6 +110,39 @@ class LemmatizerTest {
     @Test
     fun putsTheNounFirstWhenItIsTheCommonerReading() {
         assertEquals(listOf("stranger", "strange"), english.lemmasOf("stranger"))
+    }
+
+    @Test
+    fun looksInsidePossessivesAndContractions() {
+        val cases =
+            mapOf(
+                "Holmes's" to "holmes",
+                "children's" to "child",
+                "Alice’s" to "alice",
+                "don't" to "do",
+                "doesn't" to "do",
+                "isn't" to "be",
+                "can't" to "can",
+                "won't" to "will",
+                "let's" to "let",
+                "they'll" to "they",
+            )
+
+        for ((word, lemma) in cases) {
+            val lemmas = english.lemmasOf(word)
+
+            assertTrue(lemma in lemmas, "$word gave $lemmas")
+            assertEquals(word.lowercase().replace('\u2019', '\''), lemmas.last(), word)
+        }
+        assertEquals(listOf("child", "children", "children's"), english.lemmasOf("children's"))
+        assertEquals(listOf("do", "does", "doesn't"), english.lemmasOf("doesn't"))
+    }
+
+    @Test
+    fun leavesWordsWithAnInnerApostropheAlone() {
+        for (word in listOf("o'clock", "ma'am", "rock'n'roll")) {
+            assertEquals(listOf(word), english.lemmasOf(word))
+        }
     }
 
     @Test
