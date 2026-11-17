@@ -90,4 +90,17 @@ Server, on http://localhost:8081:
 
 ## License
 
-[MIT](LICENSE)
+The code is under the [MIT License](LICENSE).
+
+### Third-party data
+
+The English word forms in [shared/data/english-word-forms.txt](shared/data/english-word-forms.txt) are derived
+from AGID, the Automatically Generated Inflection Database, version 2016.01.19:
+
+- AGID: Copyright 2000-2016 by Kevin Atkinson.
+- AGID's sources include WordNet 1.6: Copyright 1997 by Princeton University. All rights reserved.
+- AGID's sources include the UK Advanced Cryptics Dictionary: Copyright (c) J Ross Beresford 1993-1999. All Rights
+  Reserved.
+
+AGID's README, with every copyright notice and permission notice of AGID and its sources, is included verbatim in
+[shared/data/AGID-README.txt](shared/data/AGID-README.txt).
