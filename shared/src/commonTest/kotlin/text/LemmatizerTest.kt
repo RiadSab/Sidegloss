@@ -33,6 +33,15 @@ class LemmatizerTest {
                 "biggest" to "big",
                 "happier" to "happy",
                 "happiest" to "happy",
+                "rose" to "rise",
+                "led" to "lead",
+                "lay" to "lie",
+                "fought" to "fight",
+                "grew" to "grow",
+                "dying" to "die",
+                "halves" to "half",
+                "more" to "much",
+                "further" to "far",
             )
 
         for ((word, lemma) in cases) {
