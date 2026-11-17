@@ -3,6 +3,7 @@ package dev.sabti.sidegloss.text
 import dev.sabti.sidegloss.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class LemmatizerTest {
     private val english = Lemmatizer(Language.ENGLISH)
@@ -58,6 +59,24 @@ class LemmatizerTest {
         assertEquals(listOf("hope", "hop", "hoping"), english.lemmasOf("hoping"))
         assertEquals(listOf("good", "well", "better"), english.lemmasOf("better"))
         assertEquals(listOf("leaf", "leave", "leaves"), english.lemmasOf("leaves"))
+    }
+
+    @Test
+    fun neverDerivesFunctionWordsFromASuffix() {
+        val falseMatches =
+            mapOf("offer" to "off", "outer" to "out", "butter" to "but", "forest" to "for", "its" to "it")
+
+        for ((word, functionWord) in falseMatches) {
+            assertFalse(functionWord in english.lemmasOf(word), word)
+        }
+        assertEquals(listOf("use", "used"), english.lemmasOf("used"))
+    }
+
+    @Test
+    fun leavesWordsThatOnlyLookInflectedAlone() {
+        for (word in listOf("news", "always", "evening", "nothing")) {
+            assertEquals(listOf(word), english.lemmasOf(word))
+        }
     }
 
     @Test

@@ -14,7 +14,9 @@ class Lemmatizer(
         val lowercased = word.lowercase()
         return when (language) {
             Language.ENGLISH -> {
-                val candidates = ENGLISH_WORD_FORMS[lowercased] ?: englishCandidates(lowercased)
+                val candidates =
+                    ENGLISH_WORD_FORMS[lowercased]
+                        ?: englishCandidates(lowercased).filterNot { it in ENGLISH_FUNCTION_WORDS }
                 (candidates + lowercased).distinct()
             }
 
@@ -26,6 +28,7 @@ class Lemmatizer(
 
     private fun englishCandidates(word: String): List<String> =
         when {
+            word in UNINFLECTED_ENGLISH_WORDS -> emptyList()
             word.endsWith("ing") -> stemCandidates(word.dropLast(3))
             word.endsWith("est") -> stemCandidates(word.dropLast(3))
             word.endsWith("ed") -> stemCandidates(word.dropLast(2))

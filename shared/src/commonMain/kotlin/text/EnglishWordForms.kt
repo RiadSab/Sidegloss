@@ -220,3 +220,21 @@ internal val ENGLISH_WORD_FORMS =
         "worse" to listOf("bad", "badly"),
         "worst" to listOf("bad", "badly"),
     )
+
+/**
+ * Articles, pronouns, prepositions, particles and conjunctions. They never inflect, so when a suffix rule turns
+ * `offer` into `off` or `its` into `it`, the rule has misfired and the candidate is dropped. A particle invented
+ * this way would otherwise let `offer` complete a phrasal verb such as "turn … off".
+ */
+internal val ENGLISH_FUNCTION_WORDS =
+    (
+        "a an the and but or nor so yet if as than i me we us you he him she her it its they them my our your his " +
+            "their this that these those at by for from in into of off on onto out to up upon with"
+    ).split(' ').toSet()
+
+/** Words that end like an inflected form but are not one, such as `news` or `evening`. */
+internal val UNINFLECTED_ENGLISH_WORDS =
+    (
+        "always news perhaps sometimes series species whereas physics mathematics politics nothing something " +
+            "anything everything evening morning during hundred"
+    ).split(' ').toSet()
