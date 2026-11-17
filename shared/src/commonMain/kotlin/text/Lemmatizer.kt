@@ -5,10 +5,11 @@ import dev.sabti.sidegloss.Language
 /**
  * Suggests the dictionary forms a word may come from, so that `ran` can be looked up as `run`.
  *
- * English uses a table of irregular forms and the spelling rules of its endings. The rules work without a
- * dictionary, so a candidate may be no word at all, such as `studie` for `studies`. No lookup matches those, so
- * they are harmless. A candidate that is a different real word is not, so the rules follow English spelling:
- * `hoping` gives `hope` and never `hop`, because `hop` is spelled `hopping`.
+ * English looks the word up in [WordFormTable], which knows the forms of about 47,000 words, after a short table
+ * written by hand for the few forms whose order it gets wrong. Only a word the table does not know, such as a name
+ * or a rare word, goes through the spelling rules of English endings, and a rule's answer is kept only when it is a
+ * word the table knows. The rules follow English spelling, so `hoping` gives `hope` and never `hop`, which is
+ * spelled `hopping`.
  */
 class Lemmatizer(
     private val language: Language,
@@ -29,11 +30,14 @@ class Lemmatizer(
     }
 
     private fun englishCandidates(word: String): List<String> {
+        val table = WordFormTable.english
         val clitic = CLITICS.firstOrNull { word.length > it.length && word.endsWith(it) }
         return when {
             word in ENGLISH_WORD_FORMS -> ENGLISH_WORD_FORMS.getValue(word)
+            word in UNINFLECTED_ENGLISH_WORDS -> emptyList()
+            word in table -> table.lemmasOf(word)
             clitic != null -> cliticCandidates(word, clitic)
-            else -> suffixCandidates(word).filterNot { it in ENGLISH_FUNCTION_WORDS }
+            else -> suffixCandidates(word).filter { it !in ENGLISH_FUNCTION_WORDS && table.isBase(it) }
         }
     }
 
@@ -49,7 +53,6 @@ class Lemmatizer(
 
     private fun suffixCandidates(word: String): List<String> =
         when {
-            word in UNINFLECTED_ENGLISH_WORDS -> emptyList()
             word.endsWith("ing") -> ingStemCandidates(word.dropLast(3))
             word.endsWith("est") -> comparedCandidates(word.dropLast(3))
             word.endsWith("eed") -> eedCandidates(word)

@@ -146,6 +146,18 @@ class LemmatizerTest {
     }
 
     @Test
+    fun findsEveryReadingTheTableKnows() {
+        assertEquals(listOf("half", "halve", "halves"), english.lemmasOf("halves"))
+        assertEquals(listOf("feel", "felt"), english.lemmasOf("felt"))
+    }
+
+    @Test
+    fun keepsOnlyKnownWordsFromTheRules() {
+        assertEquals(listOf("holmes"), english.lemmasOf("Holmes"))
+        assertEquals(listOf("holmes", "holmes's"), english.lemmasOf("Holmes's"))
+    }
+
+    @Test
     fun leavesShortWordsEndingInEedWhole() {
         for (word in listOf("need", "seed", "feed", "weed", "speed")) {
             assertEquals(listOf(word), english.lemmasOf(word))
