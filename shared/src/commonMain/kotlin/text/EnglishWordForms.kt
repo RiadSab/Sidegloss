@@ -71,6 +71,7 @@ internal val ENGLISH_WORD_FORMS =
         "forgotten" to listOf("forget"),
         "forgave" to listOf("forgive"),
         "forgiven" to listOf("forgive"),
+        "freed" to listOf("free"),
         "froze" to listOf("freeze"),
         "frozen" to listOf("freeze"),
         "got" to listOf("get"),
@@ -236,5 +237,6 @@ internal val ENGLISH_FUNCTION_WORDS =
 internal val UNINFLECTED_ENGLISH_WORDS =
     (
         "always news perhaps sometimes series species whereas physics mathematics politics nothing something " +
-            "anything everything evening morning during hundred"
+            "anything everything evening morning during hundred clothes yes pants wicked crooked rugged ragged " +
+            "wretched jagged shilling pudding earring"
     ).split(' ').toSet()

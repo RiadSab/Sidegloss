@@ -56,9 +56,47 @@ class LemmatizerTest {
 
     @Test
     fun keepsAlternativeCandidatesForAmbiguousForms() {
-        assertEquals(listOf("hope", "hop", "hoping"), english.lemmasOf("hoping"))
         assertEquals(listOf("good", "well", "better"), english.lemmasOf("better"))
         assertEquals(listOf("leaf", "leave", "leaves"), english.lemmasOf("leaves"))
+    }
+
+    @Test
+    fun followsEnglishSpellingSoNoOtherWordIsSuggested() {
+        val cases =
+            mapOf(
+                "hoping" to listOf("hope", "hoping"),
+                "hoped" to listOf("hope", "hoped"),
+                "staring" to listOf("stare", "staring"),
+                "noted" to listOf("note", "noted"),
+                "planing" to listOf("plane", "planing"),
+                "having" to listOf("have", "having"),
+                "arguing" to listOf("argue", "arguing"),
+                "judged" to listOf("judge", "judged"),
+                "seeing" to listOf("see", "seeing"),
+                "skiing" to listOf("ski", "skiing"),
+                "doing" to listOf("do", "doing"),
+                "studying" to listOf("study", "studying"),
+                "agreed" to listOf("agree", "agreed"),
+                "freed" to listOf("free", "freed"),
+            )
+
+        for ((word, lemmas) in cases) {
+            assertEquals(lemmas, english.lemmasOf(word), word)
+        }
+    }
+
+    @Test
+    fun undoesADoubledConsonant() {
+        assertEquals("hop", english.lemmasOf("hopping").first())
+        assertEquals("star", english.lemmasOf("starring").first())
+        assertEquals("plan", english.lemmasOf("planned").first())
+    }
+
+    @Test
+    fun leavesShortWordsEndingInEedWhole() {
+        for (word in listOf("need", "seed", "feed", "weed", "speed")) {
+            assertEquals(listOf(word), english.lemmasOf(word))
+        }
     }
 
     @Test
@@ -74,7 +112,7 @@ class LemmatizerTest {
 
     @Test
     fun leavesWordsThatOnlyLookInflectedAlone() {
-        for (word in listOf("news", "always", "evening", "nothing")) {
+        for (word in listOf("news", "always", "evening", "nothing", "wicked", "earring", "clothes", "yes")) {
             assertEquals(listOf(word), english.lemmasOf(word))
         }
     }
