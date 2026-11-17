@@ -29,5 +29,8 @@ iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/
 # Server runtime data
 server/data/
 
+# Planning documents, kept locally
+/docs/
+
 # Logs
 *.log
