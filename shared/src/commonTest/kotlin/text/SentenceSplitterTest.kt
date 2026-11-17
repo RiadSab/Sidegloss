@@ -13,7 +13,7 @@ class SentenceSplitterTest {
         paragraph: String,
         language: Language = Language.ENGLISH,
     ): List<String> {
-        val tokens = Tokenizer(language).tokenize(paragraph)
+        val tokens = tokensOf(paragraph, language)
         return SentenceSplitter(language).split(tokens).map { range ->
             paragraph.substring(tokens[range.first].start, tokens[range.last].end)
         }
@@ -105,7 +105,8 @@ class SentenceSplitterTest {
     @Test
     fun endsTheLastSentenceAtTheEndOfTheParagraph() {
         assertEquals(listOf("It rained.", "We stayed in"), sentences("It rained. We stayed in"))
-        assertEquals(listOf("No punctuation at all"), sentences("No punctuation at all"))
+        val tokens = tokensOf("No punctuation at all")
+        assertEquals(tokens.indices, sentenceOf(tokens))
     }
 
     @Test
@@ -116,7 +117,7 @@ class SentenceSplitterTest {
     @Test
     fun coversEveryTokenOnceInOrder() {
         for (paragraph in SAMPLES) {
-            val tokens = Tokenizer(Language.ENGLISH).tokenize(paragraph)
+            val tokens = tokensOf(paragraph)
 
             for (size in 0..tokens.size) {
                 val prefix = tokens.take(size)

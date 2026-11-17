@@ -6,13 +6,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class TokenizerTest {
-    private val tokenizer = Tokenizer(Language.ENGLISH)
     private val allTokenizers = Language.entries.map { Tokenizer(it) }
 
     private fun texts(
         paragraph: String,
         language: Language = Language.ENGLISH,
-    ) = Tokenizer(language).tokenize(paragraph).map { it.text }
+    ) = tokensOf(paragraph, language).map { it.text }
 
     @Test
     fun offsetsSelectEachTokenText() {
@@ -51,7 +50,14 @@ class TokenizerTest {
 
     @Test
     fun keepsContractionsWhole() {
-        assertEquals(listOf("I", "don't", "think", "they'll", "come", "."), texts("I don't think they'll come."))
+        val tokens = tokensOf("I don't think they'll come. I don't mind.")
+
+        assertEquals(
+            listOf("I", "don't", "think", "they'll", "come", ".", "I", "don't", "mind", "."),
+            tokens.map { it.text },
+        )
+        assertEquals(1, tokens.indexOfWord("don't"))
+        assertEquals(7, tokens.indexOfWord("don't", occurrence = 2))
     }
 
     @Test
@@ -102,7 +108,7 @@ class TokenizerTest {
 
     @Test
     fun keepsDecimalAndGroupedNumbersWhole() {
-        val tokens = tokenizer.tokenize("It costs 3.5 or 1,000. Chapter 3.")
+        val tokens = tokensOf("It costs 3.5 or 1,000. Chapter 3.")
 
         assertEquals(listOf("It", "costs", "3.5", "or", "1,000", ".", "Chapter", "3", "."), tokens.map { it.text })
         assertEquals(TokenKind.NUMBER, tokens[2].kind)
@@ -112,8 +118,8 @@ class TokenizerTest {
 
     @Test
     fun returnsNoTokensForEmptyOrBlankText() {
-        assertEquals(emptyList(), tokenizer.tokenize(""))
-        assertEquals(emptyList(), tokenizer.tokenize("  \t \u00a0 "))
+        assertEquals(emptyList(), tokensOf(""))
+        assertEquals(emptyList(), tokensOf("  \t \u00a0 "))
     }
 
     @Test
@@ -123,7 +129,7 @@ class TokenizerTest {
 
     @Test
     fun keepsEmojiAsOnePunctuationToken() {
-        val tokens = tokenizer.tokenize("Nice \uD83D\uDC4D work")
+        val tokens = tokensOf("Nice \uD83D\uDC4D work")
 
         assertEquals(listOf("Nice", "\uD83D\uDC4D", "work"), tokens.map { it.text })
         assertEquals(TokenKind.PUNCTUATION, tokens[1].kind)
