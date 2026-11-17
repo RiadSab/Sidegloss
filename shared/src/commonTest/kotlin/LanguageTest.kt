@@ -1,5 +1,6 @@
 package dev.sabti.sidegloss
 
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -21,5 +22,15 @@ class LanguageTest {
     fun fromTagReturnsNullForUnsupportedLanguage() {
         assertNull(Language.fromTag("de"))
         assertNull(Language.fromTag(""))
+    }
+
+    @Test
+    fun jsonFormIsTheTag() {
+        for (language in Language.entries) {
+            val json = Json.encodeToString(Language.serializer(), language)
+
+            assertEquals("\"${language.tag}\"", json)
+            assertEquals(language, Json.decodeFromString(Language.serializer(), json))
+        }
     }
 }
