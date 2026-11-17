@@ -93,6 +93,25 @@ class LemmatizerTest {
     }
 
     @Test
+    fun comparesOnlyAdjectives() {
+        val wordsOfTheirOwn =
+            listOf("letter", "butter", "corner", "reader", "teacher", "cover", "ever", "mother", "forest", "honest")
+
+        for (word in wordsOfTheirOwn) {
+            assertEquals(listOf(word), english.lemmasOf(word))
+        }
+        assertEquals(listOf("free", "freer"), english.lemmasOf("freer"))
+        assertEquals(listOf("late", "later"), english.lemmasOf("later"))
+        assertEquals(listOf("silly", "sillier"), english.lemmasOf("sillier"))
+        assertEquals(listOf("tall", "taller"), english.lemmasOf("taller"))
+    }
+
+    @Test
+    fun putsTheNounFirstWhenItIsTheCommonerReading() {
+        assertEquals(listOf("stranger", "strange"), english.lemmasOf("stranger"))
+    }
+
+    @Test
     fun leavesShortWordsEndingInEedWhole() {
         for (word in listOf("need", "seed", "feed", "weed", "speed")) {
             assertEquals(listOf(word), english.lemmasOf(word))

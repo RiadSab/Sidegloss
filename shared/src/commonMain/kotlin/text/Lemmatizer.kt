@@ -34,10 +34,10 @@ class Lemmatizer(
         when {
             word in UNINFLECTED_ENGLISH_WORDS -> emptyList()
             word.endsWith("ing") -> ingStemCandidates(word.dropLast(3))
-            word.endsWith("est") -> stemCandidates(word.dropLast(3))
+            word.endsWith("est") -> comparedCandidates(word.dropLast(3))
             word.endsWith("eed") -> eedCandidates(word)
             word.endsWith("ed") -> stemCandidates(word.dropLast(2))
-            word.endsWith("er") -> stemCandidates(word.dropLast(2))
+            word.endsWith("er") -> comparedCandidates(word.dropLast(2))
             word.endsWith('s') -> pluralCandidates(word)
             else -> emptyList()
         }
@@ -49,6 +49,18 @@ class Lemmatizer(
             ES_ENDINGS.any { word.endsWith(it) } -> listOf(word.dropLast(2), word.dropLast(1))
             else -> listOf(word.dropLast(1))
         }
+
+    // Comparison changes an adjective's form, not its meaning. Most other words ending in -er or -est are words of
+    // their own (letter, corner, forest) or name a person (reader), so a base counts only if it is a known adjective.
+    private fun comparedCandidates(stem: String): List<String> {
+        val bases =
+            when {
+                stem.endsWith('i') -> listOf("${stem.dropLast(1)}y")
+                stem.length >= 2 && stem.last() == stem[stem.lastIndex - 1] -> listOf(stem.dropLast(1), stem)
+                else -> listOf(stem, "${stem}e")
+            }
+        return bases.filter { it in COMPARABLE_ENGLISH_ADJECTIVES }
+    }
 
     // A short word ending in -eed is a word of its own, such as need, seed or speed. Only a longer one is the past
     // of a verb ending in -ee, as agreed is. The table holds freed.
