@@ -1,5 +1,7 @@
 package dev.sabti.sidegloss.text
 
+import dev.sabti.sidegloss.Language
+
 /**
  * Splits a paragraph into words, numbers and punctuation, keeping the character offsets of each piece so a tap on
  * the screen can be traced back to a token and a token back to its place in the text.
@@ -8,8 +10,18 @@ package dev.sabti.sidegloss.text
  * `well-known` stay whole while a leading or trailing apostrophe or hyphen is punctuation. A number is a run of
  * digits that may contain a `.` or `,` between two digits, such as `3.5` or `1,000`. Every other character that is
  * not whitespace is a punctuation token of its own.
+ *
+ * In French, a word that elides its last vowel ends at its apostrophe, so `l'homme` gives `l'` and `homme`.
  */
-class Tokenizer {
+class Tokenizer(
+    language: Language,
+) {
+    private val elidedWords: Set<String> =
+        when (language) {
+            Language.ENGLISH -> emptySet()
+            Language.FRENCH -> FRENCH_ELIDED_WORDS
+        }
+
     /** Returns the tokens of [paragraph] in reading order. Whitespace produces no token. */
     fun tokenize(paragraph: String): List<Token> =
         buildList {
@@ -48,8 +60,9 @@ class Tokenizer {
             val char = text[end]
             when {
                 char.isWordContinuation() -> end++
-                char in WORD_JOINERS && text.getOrNull(end + 1)?.isLetter() == true -> end += 2
-                else -> return end
+                char !in WORD_JOINERS || text.getOrNull(end + 1)?.isLetter() != true -> return end
+                char in APOSTROPHES && text.substring(start, end).lowercase() in elidedWords -> return end + 1
+                else -> end += 2
             }
         }
         return end
@@ -94,3 +107,11 @@ private val HYPHENS = setOf('-', '\u2010', '\u2011')
 private val WORD_JOINERS = APOSTROPHES + HYPHENS
 
 private val NUMBER_SEPARATORS = setOf('.', ',')
+
+/**
+ * French words that drop their last vowel before a vowel and join the next word with an apostrophe, as in
+ * `qu'il` or `jusqu'à`. Single words written with an apostrophe, such as `aujourd'hui` and `quelqu'un`, are not
+ * in the list, so they stay whole.
+ */
+private val FRENCH_ELIDED_WORDS =
+    setOf("c", "d", "j", "l", "m", "n", "s", "t", "qu", "jusqu", "lorsqu", "puisqu", "quoiqu")
